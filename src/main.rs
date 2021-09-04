@@ -3,6 +3,13 @@ use bevy::{
     prelude::*,
     render::camera::PerspectiveProjection,
 };
+use bevy_rapier3d::{
+    physics::{
+        ColliderBundle, NoUserData, RapierPhysicsPlugin, RigidBodyBundle, RigidBodyPositionSync,
+    },
+    prelude::{ColliderMaterial, ColliderShape},
+};
+use nalgebra::base::Vector3;
 
 struct PanOrbitCamera {
     /// The "focus point" to orbit around. It is automatically updated when panning the camera
@@ -25,12 +32,14 @@ fn main() {
     App::build()
         .insert_resource(Msaa { samples: 4 })
         .add_plugins(DefaultPlugins)
-        .add_startup_system(setup.system())
+        .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
+        .add_startup_system(setup_graphics.system())
+        .add_startup_system(setup_physics.system())
         .add_system(camera_movement_system.system())
         .run();
 }
 
-fn setup(
+fn setup_graphics(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
@@ -39,16 +48,6 @@ fn setup(
     commands.spawn_bundle(PbrBundle {
         mesh: meshes.add(Mesh::from(shape::Plane { size: 5.0 })),
         material: materials.add(Color::rgb(0.3, 0.5, 0.3).into()),
-        ..Default::default()
-    });
-    // cube
-    commands.spawn_bundle(PbrBundle {
-        mesh: meshes.add(Mesh::from(shape::Icosphere {
-            radius: 0.5,
-            subdivisions: 5,
-        })),
-        material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
-        transform: Transform::from_xyz(0.0, 0.75, 0.0),
         ..Default::default()
     });
     // light
@@ -68,6 +67,47 @@ fn setup(
             radius,
             ..Default::default()
         });
+}
+
+fn setup_physics(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+) {
+    /* Create the ground. */
+    let collider = ColliderBundle {
+        shape: ColliderShape::halfspace(Vector3::y_axis()),
+        ..Default::default()
+    };
+    commands.spawn_bundle(collider);
+
+    /* Create the bouncing ball. */
+    let rigid_body = RigidBodyBundle {
+        position: Vec3::new(0., 10., 0.).into(),
+        ..Default::default()
+    };
+    let collider = ColliderBundle {
+        shape: ColliderShape::ball(0.5),
+        material: ColliderMaterial {
+            restitution: 0.7,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let sphere = PbrBundle {
+        mesh: meshes.add(Mesh::from(shape::Icosphere {
+            radius: 0.5,
+            subdivisions: 5,
+        })),
+        material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
+        ..Default::default()
+    };
+    commands
+        .spawn_bundle(rigid_body)
+        .insert_bundle(sphere)
+        .insert_bundle(collider)
+        .insert(Transform::default())
+        .insert(RigidBodyPositionSync::Discrete);
 }
 
 fn camera_movement_system(
