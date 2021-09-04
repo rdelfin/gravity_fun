@@ -43,9 +43,12 @@ fn setup(
     });
     // cube
     commands.spawn_bundle(PbrBundle {
-        mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
+        mesh: meshes.add(Mesh::from(shape::Icosphere {
+            radius: 0.5,
+            subdivisions: 5,
+        })),
         material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
-        transform: Transform::from_xyz(0.0, 0.5, 0.0),
+        transform: Transform::from_xyz(0.0, 0.75, 0.0),
         ..Default::default()
     });
     // light
