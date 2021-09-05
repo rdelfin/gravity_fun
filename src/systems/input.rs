@@ -9,8 +9,19 @@ pub fn ball_move_system(
         &RigidBodyMassProps,
     )>,
 ) {
-    if keys.just_pressed(KeyCode::Space) {
-        for (_, mut rb_vel, rb_mprops) in rigid_bodies.iter_mut() {
+    for (mut rb_forces, mut rb_vel, rb_mprops) in rigid_bodies.iter_mut() {
+        if keys.pressed(KeyCode::W) {
+            rb_forces.torque = Vec3::new(-0.3, 0., 0.).into();
+        } else if keys.pressed(KeyCode::S) {
+            rb_forces.torque = Vec3::new(0.3, 0., 0.).into();
+        }
+        if keys.pressed(KeyCode::A) {
+            rb_forces.torque = Vec3::new(0., 0., 0.3).into();
+        } else if keys.pressed(KeyCode::D) {
+            rb_forces.torque = Vec3::new(0., 0., -0.3).into();
+        }
+
+        if keys.just_pressed(KeyCode::Space) {
             rb_vel.apply_impulse(rb_mprops, Vec3::new(0.0, 2.0, 0.0).into());
         }
     }
