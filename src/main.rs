@@ -1,5 +1,5 @@
 use crate::components::PanOrbitCamera;
-use bevy::prelude::*;
+use bevy::{input::system::exit_on_esc_system, prelude::*};
 use bevy_rapier3d::{
     physics::{
         ColliderBundle, NoUserData, RapierPhysicsPlugin, RigidBodyBundle, RigidBodyPositionSync,
@@ -18,6 +18,7 @@ fn main() {
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
         .add_startup_system(setup_graphics.system())
         .add_startup_system(setup_physics.system())
+        .add_system(exit_on_esc_system.system())
         .add_system(systems::camera_movement_system.system())
         .run();
 }
