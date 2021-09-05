@@ -20,6 +20,7 @@ fn main() {
         .add_startup_system(setup_physics.system())
         .add_system(exit_on_esc_system.system())
         .add_system(systems::camera_movement_system.system())
+        .add_system(systems::ball_move_system.system())
         .run();
 }
 

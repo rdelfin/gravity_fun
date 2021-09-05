@@ -1,3 +1,4 @@
 mod camera;
+mod input;
 
-pub use camera::camera_movement_system;
+pub use self::{camera::camera_movement_system, input::ball_move_system};
