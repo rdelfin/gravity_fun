@@ -1,4 +1,3 @@
-use crate::components::PanOrbitCamera;
 use bevy::{input::system::exit_on_esc_system, prelude::*};
 use bevy_rapier3d::{
     physics::{
@@ -48,7 +47,7 @@ fn setup_graphics(
             transform: Transform::from_translation(translation).looking_at(Vec3::ZERO, Vec3::Y),
             ..Default::default()
         })
-        .insert(PanOrbitCamera {
+        .insert(components::PanOrbitCamera {
             radius,
             ..Default::default()
         });
@@ -91,6 +90,7 @@ fn setup_physics(
         .spawn_bundle(rigid_body)
         .insert_bundle(sphere)
         .insert_bundle(collider)
+        .insert(components::Controllable)
         .insert(Transform::default())
         .insert(RigidBodyPositionSync::Discrete);
 }

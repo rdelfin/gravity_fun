@@ -1,3 +1,4 @@
+use crate::components::Controllable;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::{RigidBodyForces, RigidBodyMassProps, RigidBodyVelocity};
 
@@ -7,9 +8,10 @@ pub fn ball_move_system(
         &mut RigidBodyForces,
         &mut RigidBodyVelocity,
         &RigidBodyMassProps,
+        &Controllable,
     )>,
 ) {
-    for (mut rb_forces, mut rb_vel, rb_mprops) in rigid_bodies.iter_mut() {
+    for (mut rb_forces, mut rb_vel, rb_mprops, _) in rigid_bodies.iter_mut() {
         if keys.pressed(KeyCode::W) {
             rb_forces.torque = Vec3::new(-0.3, 0., 0.).into();
         } else if keys.pressed(KeyCode::S) {

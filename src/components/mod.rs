@@ -1,3 +1,4 @@
 mod camera;
+mod controllable;
 
-pub use camera::PanOrbitCamera;
+pub use self::{camera::PanOrbitCamera, controllable::Controllable};
