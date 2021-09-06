@@ -1,7 +1,8 @@
 use bevy::{input::system::exit_on_esc_system, prelude::*};
 use bevy_rapier3d::{
     physics::{
-        ColliderBundle, NoUserData, RapierPhysicsPlugin, RigidBodyBundle, RigidBodyPositionSync,
+        ColliderBundle, NoUserData, RapierConfiguration, RapierPhysicsPlugin, RigidBodyBundle,
+        RigidBodyPositionSync,
     },
     prelude::{ColliderMaterial, ColliderShape},
 };
@@ -15,6 +16,10 @@ fn main() {
         .insert_resource(Msaa { samples: 4 })
         .add_plugins(DefaultPlugins)
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
+        .insert_resource(RapierConfiguration {
+            gravity: Vector3::new(0., -10., 0.),
+            ..Default::default()
+        })
         .add_startup_system(setup_graphics.system())
         .add_startup_system(setup_physics.system())
         .add_system(exit_on_esc_system.system())
@@ -23,24 +28,14 @@ fn main() {
         .run();
 }
 
-fn setup_graphics(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-) {
-    // plane
-    commands.spawn_bundle(PbrBundle {
-        mesh: meshes.add(Mesh::from(shape::Plane { size: 5.0 })),
-        material: materials.add(Color::rgb(0.3, 0.5, 0.3).into()),
-        ..Default::default()
-    });
+fn setup_graphics(mut commands: Commands) {
     // light
     commands.spawn_bundle(LightBundle {
         transform: Transform::from_xyz(4.0, 8.0, 4.0),
         ..Default::default()
     });
     // camera
-    let translation = Vec3::new(-2.0, 2.5, 5.0);
+    let translation = Vec3::new(-20.0, 20.0, 0.0);
     let radius = translation.length();
     commands
         .spawn_bundle(PerspectiveCameraBundle {
@@ -59,11 +54,19 @@ fn setup_physics(
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     /* Create the ground. */
-    let collider = ColliderBundle {
-        shape: ColliderShape::halfspace(Vector3::y_axis()),
+    let planet = PbrBundle {
+        mesh: meshes.add(Mesh::from(shape::Icosphere {
+            radius: 5.,
+            subdivisions: 5,
+        })),
+        material: materials.add(Color::rgb(0.0, 1.0, 0.0).into()),
         ..Default::default()
     };
-    commands.spawn_bundle(collider);
+    let collider = ColliderBundle {
+        shape: ColliderShape::ball(5.),
+        ..Default::default()
+    };
+    commands.spawn_bundle(planet).insert_bundle(collider);
 
     /* Create the bouncing ball. */
     let rigid_body = RigidBodyBundle {
