@@ -7,17 +7,23 @@ use bevy_rapier3d::{
     prelude::{ColliderMaterial, ColliderShape},
 };
 use nalgebra::base::Vector3;
+use simple_logger::SimpleLogger;
 
 mod components;
 mod systems;
 
 fn main() {
+    SimpleLogger::new()
+        .with_level(log::LevelFilter::Info)
+        .init()
+        .unwrap();
+
     App::build()
         .insert_resource(Msaa { samples: 4 })
         .add_plugins(DefaultPlugins)
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
         .insert_resource(RapierConfiguration {
-            gravity: Vector3::new(0., -10., 0.),
+            gravity: Vector3::new(0., 0., 0.),
             ..Default::default()
         })
         .add_startup_system(setup_graphics.system())
@@ -25,6 +31,7 @@ fn main() {
         .add_system(exit_on_esc_system.system())
         .add_system(systems::camera_movement_system.system())
         .add_system(systems::ball_move_system.system())
+        .add_system(systems::gravity_system.system())
         .run();
 }
 
@@ -66,7 +73,11 @@ fn setup_physics(
         shape: ColliderShape::ball(5.),
         ..Default::default()
     };
-    commands.spawn_bundle(planet).insert_bundle(collider);
+    commands
+        .spawn_bundle(planet)
+        .insert_bundle(collider)
+        .insert(components::GravitationalBody { f: 0. })
+        .insert(Transform::default());
 
     /* Create the bouncing ball. */
     let rigid_body = RigidBodyBundle {
@@ -94,6 +105,7 @@ fn setup_physics(
         .insert_bundle(sphere)
         .insert_bundle(collider)
         .insert(components::Controllable)
+        .insert(components::AttractedBody::default())
         .insert(Transform::default())
         .insert(RigidBodyPositionSync::Discrete);
 }
