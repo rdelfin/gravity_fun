@@ -76,7 +76,7 @@ fn setup_physics(
     commands
         .spawn_bundle(planet)
         .insert_bundle(collider)
-        .insert(components::GravitationalBody { f: 0. })
+        .insert(components::GravitationalBody { f: 20. })
         .insert(Transform::default());
 
     /* Create the bouncing ball. */
